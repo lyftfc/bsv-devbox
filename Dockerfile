@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     iverilog \
     verilator \
     gtkwave \
+    libtinfo6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Allow the 'ubuntu' user to use sudo without a password
@@ -53,3 +54,6 @@ RUN cd /usr/local/lib/python3.12/dist-packages/cocotb/share/makefiles/simulators
     && patch Makefile.verilator < /tmp/bsc-verilator-cocotb-1-9-2.patch \
     && rm /tmp/bsc-verilator-cocotb-1-9-2.patch
 
+# Link libtinfo6 to libtinfo5 to provide support for running host-installed Vivado
+RUN cd /usr/lib/x86_64-linux-gnu \
+    && ln -s libtinfo.so.6 libtinfo.so.5 && ldconfig
