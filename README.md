@@ -24,7 +24,7 @@ Refer to [this link](https://containers.dev/guide/dockerfile) for more informati
 
 ## Versions
 
-The current version `v24.1` is based on the official Ubuntu 24.04 image.
+The current version `v24.2` is based on the official Ubuntu 24.04 image.
 
 Tools:
 - Bluespec Compiler (BSC) `2025.07` — installed to `/opt/bluespec`
