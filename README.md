@@ -5,7 +5,7 @@ Docker container based on Ubuntu image, packed with tools required for Bluespec 
 The [Bluespec Compiler (BSC)](https://github.com/B-Lang-org/bsc) is installed to `/opt/bluespec`.
 The BSC [contributed library](https://github.com/B-Lang-org/bsc-contrib) is also built and patched to the library, along with extra utilities from the [Flute](https://github.com/bluespec/Flute) processor repository, for AXI4 Streams and simulation cycle utilities.
 
-It also packs Icarus Verilog, Verilator and Cocotb for design simulation and verification. Cocotb Makefile for Verilator is patched for BSC-generated code quirks.
+It also packs Icarus Verilog, Verilator and Cocotb for design simulation and verification, and Yosys for open-source synthesis. Cocotb Makefile for Verilator is patched for BSC-generated code quirks.
 
 ## Usage
 
@@ -31,6 +31,7 @@ Tools:
 - Icarus Verilog (iverilog) — RTL simulation tool
 - Verilator `5.020` — cycle-accurate HDL simulator
 - Cocotb `1.9.2` — Python-based co‑simulation/testbench framework
+- Yosys `0.70` — open-source synthesis suite, built from source and installed to `/opt/yosys` (supports `synth_xilinx -family xcup` for UltraScale+ and `synth_intel_alm` for Cyclone V)
 - GCC C++ Compiler `13.3.0`
 - CMake `3.28.3`
 - Python `3.12.3`

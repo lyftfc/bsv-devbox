@@ -1,3 +1,44 @@
+# ---------------------------------------------------------------------------
+# Builder stage: compile Yosys from a pinned upstream release
+# (Ubuntu 24.04's apt package is the outdated 0.33)
+# ---------------------------------------------------------------------------
+FROM ubuntu:24.04 AS yosys-builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG YOSYS_VERSION=0.70
+ARG YOSYS_SHA256=c6bd8b83aad633f6786fc861fe8f5dbc74c37bfae77f7bd0220e6f00f15f1d55
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    ninja-build \
+    curl \
+    ca-certificates \
+    python3 \
+    bison \
+    flex \
+    libfl-dev \
+    gawk \
+    pkg-config \
+    libffi-dev \
+    libreadline-dev \
+    tcl-dev \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# The release tarball bundles all submodules (ABC, slang, etc.)
+RUN mkdir -p /src/yosys && cd /src/yosys \
+    && curl -fsSL --retry 5 --retry-all-errors -o yosys.tar.gz https://github.com/YosysHQ/yosys/releases/download/v${YOSYS_VERSION}/yosys.tar.gz \
+    && echo "${YOSYS_SHA256}  yosys.tar.gz" | sha256sum -c - \
+    && tar xzf yosys.tar.gz && rm yosys.tar.gz \
+    && cmake -B build -G Ninja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/yosys \
+    && cmake --build build --parallel $(nproc) \
+    && cmake --install build --strip
+
+# ---------------------------------------------------------------------------
+# Main image
+# ---------------------------------------------------------------------------
 FROM ubuntu:24.04
 
 # Avoid warnings by switching to noninteractive
@@ -21,6 +62,10 @@ RUN apt-get update && apt-get install -y \
     verilator \
     gtkwave \
     libtinfo6 \
+    libffi8 \
+    libreadline8t64 \
+    libtcl8.6 \
+    zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
 # Allow the 'ubuntu' user to use sudo without a password
@@ -57,3 +102,8 @@ RUN cd /usr/local/lib/python3.12/dist-packages/cocotb/share/makefiles/simulators
 # Link libtinfo6 to libtinfo5 to provide support for running host-installed Vivado
 RUN cd /usr/lib/x86_64-linux-gnu \
     && ln -s libtinfo.so.6 libtinfo.so.5 && ldconfig
+
+# Installing Yosys built in the builder stage
+COPY --from=yosys-builder /opt/yosys /opt/yosys
+
+ENV PATH=/opt/yosys/bin:$PATH
